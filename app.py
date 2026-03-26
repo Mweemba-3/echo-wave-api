@@ -13,6 +13,7 @@ def home():
         'status': 'running',
         'endpoints': {
             'search': '/api/search?q=query&limit=20',
+            'stream': '/api/stream?url=YOUTUBE_URL',
             'health': '/api/health'
         }
     })
@@ -63,6 +64,55 @@ def search():
                         })
         
         return jsonify(results)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# THIS IS THE IMPORTANT PART - STREAMING ENDPOINT
+@app.route('/api/stream')
+def stream():
+    try:
+        url = request.args.get('url', '')
+        
+        if not url:
+            return jsonify({'error': 'No URL provided'}), 400
+        
+        # Extract the direct audio URL from YouTube
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'quiet': True,
+            'no_warnings': True,
+            'extract_flat': False,
+        }
+        
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            try:
+                info = ydl.extract_info(url, download=False)
+                
+                # Get the direct audio URL
+                audio_url = None
+                if 'url' in info:
+                    audio_url = info['url']
+                elif 'formats' in info:
+                    # Find the best audio format
+                    for f in info['formats']:
+                        if f.get('acodec') != 'none' and f.get('vcodec') == 'none':
+                            audio_url = f.get('url')
+                            break
+                    # Fallback to first format if no audio-only found
+                    if not audio_url and info['formats']:
+                        audio_url = info['formats'][0].get('url')
+                
+                if audio_url:
+                    return jsonify({
+                        'success': True,
+                        'stream_url': audio_url
+                    })
+                else:
+                    return jsonify({'error': 'Could not get audio stream'}), 500
+                    
+            except Exception as e:
+                return jsonify({'error': str(e)}), 500
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
