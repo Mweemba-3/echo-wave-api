@@ -68,7 +68,7 @@ def search():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# THIS IS THE IMPORTANT PART - STREAMING ENDPOINT
+# ========== STREAMING ENDPOINT (ADD THIS) ==========
 @app.route('/api/stream')
 def stream():
     try:
@@ -77,7 +77,17 @@ def stream():
         if not url:
             return jsonify({'error': 'No URL provided'}), 400
         
-        # Extract the direct audio URL from YouTube
+        # Extract video ID from YouTube URL
+        video_id = None
+        if 'youtube.com/watch?v=' in url:
+            video_id = url.split('v=')[1].split('&')[0]
+        elif 'youtu.be/' in url:
+            video_id = url.split('/')[-1].split('?')[0]
+        
+        if not video_id:
+            return jsonify({'error': 'Invalid YouTube URL'}), 400
+        
+        # Get direct audio stream URL using yt-dlp
         ydl_opts = {
             'format': 'bestaudio/best',
             'quiet': True,
@@ -89,17 +99,17 @@ def stream():
             try:
                 info = ydl.extract_info(url, download=False)
                 
-                # Get the direct audio URL
+                # Find the best audio format URL
                 audio_url = None
                 if 'url' in info:
                     audio_url = info['url']
                 elif 'formats' in info:
-                    # Find the best audio format
+                    # Look for audio-only format
                     for f in info['formats']:
                         if f.get('acodec') != 'none' and f.get('vcodec') == 'none':
                             audio_url = f.get('url')
                             break
-                    # Fallback to first format if no audio-only found
+                    # If no audio-only found, use the first format
                     if not audio_url and info['formats']:
                         audio_url = info['formats'][0].get('url')
                 
