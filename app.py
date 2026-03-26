@@ -4,13 +4,11 @@ import yt_dlp
 import os
 import re
 import uuid
+import requests
+import io
 
 app = Flask(__name__)
 CORS(app)
-
-# Create downloads folder
-DOWNLOAD_FOLDER = '/tmp/downloads'
-os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
 class MusicFetcher:
     def search_youtube(self, query, max_results=20):
@@ -41,7 +39,7 @@ class MusicFetcher:
                                 'duration': f"{minutes:02d}:{seconds:02d}",
                                 'duration_seconds': int(duration_raw) if duration_raw else 0,
                                 'url': f"https://www.youtube.com/watch?v={entry.get('id')}",
-                                'thumbnail': entry.get('thumbnail', ''),
+                                'thumbnail': f"https://img.youtube.com/vi/{entry.get('id')}/hqdefault.jpg",
                                 'downloaded': False
                             })
                 
@@ -51,41 +49,28 @@ class MusicFetcher:
                 print(f"Search error: {e}")
                 return []
     
-    def download_audio(self, url, title="", artist=""):
-        safe_title = re.sub(r'[<>:"/\\|?*]', '_', title)
-        filename = f"{safe_title}_{uuid.uuid4().hex[:8]}.mp3"
-        filepath = os.path.join(DOWNLOAD_FOLDER, filename)
-        
+    def get_audio_url(self, url):
+        """Get direct audio URL without downloading"""
         ydl_opts = {
             'format': 'bestaudio/best',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
-            'outtmpl': filepath.replace('.mp3', '.%(ext)s'),
             'quiet': True,
-            'noplaylist': True,
             'no_warnings': True,
         }
         
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             try:
-                info = ydl.extract_info(url, download=True)
-                actual_file = filepath.replace('.mp3', '.mp3')
-                
-                # Check if file exists
-                if os.path.exists(actual_file):
-                    return {
-                        'id': info.get('id', ''),
-                        'title': title,
-                        'artist': artist,
-                        'filepath': actual_file,
-                        'size': os.path.getsize(actual_file)
-                    }
+                info = ydl.extract_info(url, download=False)
+                # Get the best audio format URL
+                if 'url' in info:
+                    return info['url']
+                elif 'formats' in info:
+                    for f in info['formats']:
+                        if f.get('acodec') != 'none' and f.get('vcodec') == 'none':
+                            return f.get('url')
+                    return info['formats'][0].get('url')
                 return None
             except Exception as e:
-                print(f"Download error: {e}")
+                print(f"Error getting audio URL: {e}")
                 return None
 
 fetcher = MusicFetcher()
@@ -97,7 +82,7 @@ def home():
         'status': 'running',
         'endpoints': {
             'search': '/api/search?q=query&limit=20',
-            'download': '/api/download (POST)',
+            'stream': '/api/stream?url=YOUTUBE_URL',
             'health': '/api/health'
         }
     })
@@ -124,30 +109,24 @@ def search():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/download', methods=['POST'])
-def download():
+@app.route('/api/stream')
+def stream():
+    """Get streaming URL for a YouTube video"""
     try:
-        data = request.get_json()
-        url = data.get('url')
-        title = data.get('title', '')
-        artist = data.get('artist', '')
+        url = request.args.get('url', '')
         
         if not url:
             return jsonify({'error': 'No URL provided'}), 400
         
-        result = fetcher.download_audio(url, title, artist)
+        audio_url = fetcher.get_audio_url(url)
         
-        if result:
+        if audio_url:
             return jsonify({
                 'success': True,
-                'id': result['id'],
-                'title': result['title'],
-                'artist': result['artist'],
-                'filepath': result['filepath'],
-                'size': result['size']
+                'stream_url': audio_url
             })
         else:
-            return jsonify({'error': 'Download failed'}), 500
+            return jsonify({'error': 'Could not get audio stream'}), 500
             
     except Exception as e:
         return jsonify({'error': str(e)}), 500
