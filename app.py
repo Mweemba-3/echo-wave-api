@@ -1,9 +1,16 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import yt_dlp
+import os
+import re
+import uuid
 
 app = Flask(__name__)
 CORS(app)
+
+# Create downloads folder
+DOWNLOAD_FOLDER = '/tmp/downloads'
+os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
 class MusicFetcher:
     def search_youtube(self, query, max_results=20):
@@ -43,6 +50,43 @@ class MusicFetcher:
             except Exception as e:
                 print(f"Search error: {e}")
                 return []
+    
+    def download_audio(self, url, title="", artist=""):
+        safe_title = re.sub(r'[<>:"/\\|?*]', '_', title)
+        filename = f"{safe_title}_{uuid.uuid4().hex[:8]}.mp3"
+        filepath = os.path.join(DOWNLOAD_FOLDER, filename)
+        
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
+            }],
+            'outtmpl': filepath.replace('.mp3', '.%(ext)s'),
+            'quiet': True,
+            'noplaylist': True,
+            'no_warnings': True,
+        }
+        
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            try:
+                info = ydl.extract_info(url, download=True)
+                actual_file = filepath.replace('.mp3', '.mp3')
+                
+                # Check if file exists
+                if os.path.exists(actual_file):
+                    return {
+                        'id': info.get('id', ''),
+                        'title': title,
+                        'artist': artist,
+                        'filepath': actual_file,
+                        'size': os.path.getsize(actual_file)
+                    }
+                return None
+            except Exception as e:
+                print(f"Download error: {e}")
+                return None
 
 fetcher = MusicFetcher()
 
@@ -53,6 +97,7 @@ def home():
         'status': 'running',
         'endpoints': {
             'search': '/api/search?q=query&limit=20',
+            'download': '/api/download (POST)',
             'health': '/api/health'
         }
     })
@@ -76,6 +121,34 @@ def search():
         results = fetcher.search_youtube(query, limit)
         return jsonify(results)
         
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/download', methods=['POST'])
+def download():
+    try:
+        data = request.get_json()
+        url = data.get('url')
+        title = data.get('title', '')
+        artist = data.get('artist', '')
+        
+        if not url:
+            return jsonify({'error': 'No URL provided'}), 400
+        
+        result = fetcher.download_audio(url, title, artist)
+        
+        if result:
+            return jsonify({
+                'success': True,
+                'id': result['id'],
+                'title': result['title'],
+                'artist': result['artist'],
+                'filepath': result['filepath'],
+                'size': result['size']
+            })
+        else:
+            return jsonify({'error': 'Download failed'}), 500
+            
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
