@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@color/card_background">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Rename File"
+        android:textColor="@color/text_primary"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:fontFamily="sans-serif-medium"
+        android:layout_marginBottom="16dp" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        app:boxStrokeColor="@color/electric_cyan"
+        app:hintTextColor="@color/electric_cyan">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_file_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="File name (without extension)"
+            android:textColorHint="@color/text_secondary"
+            android:textColor="@color/text_primary"
+            android:fontFamily="sans-serif" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="The file extension will be preserved"
+        android:textColor="@color/text_tertiary"
+        android:textSize="12sp"
+        android:layout_marginTop="8dp"
+        android:fontFamily="sans-serif" />
+
+</LinearLayout>

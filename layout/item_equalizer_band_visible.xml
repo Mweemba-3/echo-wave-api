@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="8dp"
+    android:layout_marginBottom="4dp"
+    android:background="#2A2A2A">
+
+    <!-- Frequency Label -->
+    <TextView
+        android:id="@+id/tv_frequency"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:text="100 Hz"
+        android:textColor="#00FF00"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <!-- SeekBar -->
+    <SeekBar
+        android:id="@+id/seek_bar"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_weight="1"
+        android:maxHeight="4dp"
+        android:minHeight="4dp"
+        android:progressDrawable="@drawable/progress_equalizer_visible"
+        android:thumb="@drawable/thumb_equalizer_visible" />
+
+    <!-- Value Display -->
+    <TextView
+        android:id="@+id/tv_value"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:text="0.0 dB"
+        android:textColor="#FFFFFF"
+        android:textSize="11sp"
+        android:gravity="end"
+        android:layout_marginStart="8dp" />
+
+    <!-- Visual Progress Bar -->
+    <View
+        android:id="@+id/progress_bar"
+        android:layout_width="0dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="4dp"
+        android:background="@color/electric_cyan_dark"
+        android:alpha="0.3" />
+
+</LinearLayout>

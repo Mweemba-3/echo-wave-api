@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="#FF333333"
+    android:padding="8dp"
+    android:layout_marginBottom="2dp">
+
+    <TextView
+        android:id="@+id/tv_freq_test"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:text="TEST"
+        android:textColor="#FFFF00"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/tv_value_test"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:text="0.0 dB"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:layout_marginStart="8dp" />
+
+</LinearLayout>

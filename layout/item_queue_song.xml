@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="12dp"
+    android:background="?selectableItemBackground"
+    android:gravity="center_vertical">
+
+    <!-- Position Number -->
+    <TextView
+        android:id="@+id/tv_position"
+        android:layout_width="32dp"
+        android:layout_height="wrap_content"
+        android:text="1"
+        android:textColor="@color/text_secondary"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:visibility="visible" />
+
+    <!-- Now Playing Indicator -->
+    <ImageView
+        android:id="@+id/iv_now_playing"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_playing_indicator"
+        android:visibility="gone"
+        android:layout_marginEnd="8dp"
+        app:tint="@color/electric_cyan" />
+
+    <!-- Album Art -->
+    <ImageView
+        android:id="@+id/iv_album_art"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/default_album_art_small"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="12dp" />
+
+    <!-- Song Info -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_song_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Song Title"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/tv_song_artist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Artist Name"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+    </LinearLayout>
+
+    <!-- Remove Button -->
+    <ImageView
+        android:id="@+id/btn_remove"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@drawable/ic_close"
+        android:padding="8dp"
+        android:background="?selectableItemBackgroundBorderless"
+        app:tint="@color/text_tertiary"
+        android:contentDescription="Remove from queue" />
+
+</LinearLayout>
